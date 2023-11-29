@@ -28,6 +28,9 @@ void Exec(char *command) {
 	int len_command=strnlen(command,BUFSIZE);
 	command[len_command-1]='\0'; //to suppress the character created when we press "enter"
 	ret=fork();
+	if (ret<0) { // if there is a problem
+		exit(EXIT_FAILURE);
+	}
 	if (ret==0) { //in the son process
 		execlp(command, command,NULL); //execution of the command written in the prompt
 		exit(EXIT_SUCCESS);
