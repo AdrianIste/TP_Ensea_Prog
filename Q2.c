@@ -2,23 +2,52 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #define BUFSIZE 128
+char *buf;
+int count_buf, count_prompt, number_oct;
+char prompt[BUFSIZE];
+pid_t pid;
+pid_t pid_son;
+pid_t ret;
+int status;
+	
+void Welcome() {
+	buf="\nBienvenue dans le Shell ENSEA.\nPour quitter, tapez 'exit'.\nenseash % ";
+	count_buf=70; //number of characters in buf
+	
+	write(STDOUT_FILENO,buf,count_buf); //to write buf
+}	
 
+void getPrompt() {
+	count_prompt=BUFSIZE;
+	number_oct=read(STDOUT_FILENO,prompt,count_prompt);//reading of the prompt in "prompt"
+}
+
+void Exec(char *command) {
+	int len_command=strnlen(command,BUFSIZE);
+	command[len_command-1]='\0'; //to suppress the character created when we press "enter"
+	ret=fork();
+	if (ret==0) { //in the son process
+		execlp(command, command,NULL); //execution of the command written in the prompt
+		exit(EXIT_SUCCESS);
+	}
+	if (ret>0) { //in the father process
+	
+		wait(&status);
+	}
+}
+	
 
 int main() {
 	
-	char *buf;
-	int count_buf, count_prompt, number_oct;
-	char prompt[BUFSIZE];
 	
-	buf="\nBienvenue dans le Shell ENSEA.\nPour quitter, tapez 'exit'.\nenseash %\n";
-	count_buf=70; //nombre de caracteres de buf
-	count_prompt=BUFSIZE;
+	
 	while (1) {
+		Welcome();
+		getPrompt();
+		Exec(prompt);
 		
-		write(STDOUT_FILENO,buf,count_buf);
-		number_oct=read(STDOUT_FILENO,prompt,count_prompt); //on stocke dans prompt la chaine de caracere lue et dans number_oct le nombre d octets lus
-		write (STDOUT_FILENO,prompt,number_oct); //pour verifier
 		
 
 	}
