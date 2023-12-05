@@ -27,14 +27,11 @@ void getPrompt() {
 void Exec(char *command) {
 	char *command_exit="exit";
 	int size_exit=4;
-	char *command_EOF="EOF";
-	int size_EOF=3;
 	
 	char *bye="Bye bye...\n";
 	int count_bye=11;
 	int len_command=strnlen(command,BUFSIZE);
 	int compare=strncmp(command,command_exit,len_command-1); //0 if command and command_exit are the same
-	int compare2=strncmp(command,command_EOF,len_command-1);
 	command[len_command-1]='\0'; //to suppress the character created when we press "enter"
 	ret=fork();
 	if (ret<0) { // if there is a problem
@@ -42,10 +39,10 @@ void Exec(char *command) {
 	}
 	if (ret==0) { //in the son process
 		execlp(command, command,NULL); //execution of the command written in the prompt
-		//exit(EXIT_SUCCESS);
+		exit(EXIT_SUCCESS);
 	}
 	if (ret>0) { //in the father process
-		if (compare==0 && len_command-1==size_exit) { //if exit is written
+		if ((compare==0 && len_command-1==size_exit)||(number_oct==0)) { //if exit is written, si number oct==0, It significate end of file, which is what Ctrl+D tell
 			write(STDOUT_FILENO,bye,count_bye);
 			exit(EXIT_SUCCESS);
 		}
