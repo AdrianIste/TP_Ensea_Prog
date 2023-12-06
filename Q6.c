@@ -83,7 +83,7 @@ void Exec(char *command) {
 		
 	}
 	if (ret>0) { //in the father process
-			clock_gettime(clk_id,&res); //
+			clock_gettime(clk_id,&res); //writes the time in res
 			count_time_start=res.tv_nsec;
 			wait(&status); //waiting for the son process to finish
 			clock_gettime(clk_id,&end);
