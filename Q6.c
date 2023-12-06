@@ -5,20 +5,14 @@
 #include <sys/wait.h>
 #include <time.h>
 #define BUFSIZE 128
-char *buf;
-int count_buf, count_prompt, number_oct;
-char prompt[BUFSIZE];
-pid_t pid;
-pid_t pid_son;
-pid_t ret;
-int status;
-int count_time_start;
+
+int number_oct;
 char newPrompt[BUFSIZE];
-struct timespec res; //to read the time
-clockid_t clk_id=CLOCK_MONOTONIC;//choice of the clock
-int divis=100000;
+char prompt[BUFSIZE];
 	
 void Welcome() {
+	char *buf;
+	int count_buf;
 	buf="\nBienvenue dans le Shell ENSEA.\nPour quitter, tapez 'exit'.\nenseash % ";
 	count_buf=70; //number of characters in buf
 	
@@ -26,11 +20,43 @@ void Welcome() {
 }	
 
 void getPrompt() {		
+	int count_prompt;
+	
 	count_prompt=BUFSIZE;
 	number_oct=read(STDOUT_FILENO,prompt,count_prompt);//reading of the prompt in "prompt"
 }
 
+
+void execute_command(char* cmd) {
+	
+	char *args[BUFSIZE];  
+    char cmd_copy[BUFSIZE]; 
+    strcpy(cmd_copy, cmd); 
+
+    // use of strtok to take each args
+    int i = 0;
+    args[i] = strtok(cmd_copy, " "); // First word (name of the command)
+    while (args[i] != NULL) { 
+        i++;
+        args[i] = strtok(NULL, " "); 
+    }
+   
+    
+		if (execvp(args[0], args) == -1) {
+        perror("Error executing command");
+        exit(EXIT_FAILURE);
+    }
+}
+
 void Exec(char *command) {
+	int count_time_start;
+	struct timespec res; //to read the time
+	clockid_t clk_id=CLOCK_MONOTONIC;//choice of the clock
+	
+	pid_t ret;
+	int status;
+	struct timespec end;
+	int divis=100000;
 	int count_time;
 	char *command_exit="exit";
 	int size_exit=4;
@@ -49,8 +75,8 @@ void Exec(char *command) {
 		exit(EXIT_FAILURE); 
 	}
 	if (ret==0) { //in the son process
-		sleep(1);
-		execlp(command, command,NULL); //execution of the command written in the prompt
+		execute_command(command);
+		//execlp(command, command,NULL); //execution of the command written in the prompt
 		
 		exit(EXIT_FAILURE); 
 		
@@ -60,8 +86,8 @@ void Exec(char *command) {
 			clock_gettime(clk_id,&res); //
 			count_time_start=res.tv_nsec;
 			wait(&status); //waiting for the son process to finish
-			clock_gettime(clk_id,&res);
-			count_time=(res.tv_nsec-count_time_start)/divis;
+			clock_gettime(clk_id,&end);
+			count_time=(end.tv_nsec-count_time_start)/divis;
 			if (WIFEXITED(status)) {
 				sprintf(newPrompt,"enseash [exit:%d|%d ms] $",WEXITSTATUS(status),count_time);
 			} else if(WIFSIGNALED(status)) {
@@ -70,8 +96,6 @@ void Exec(char *command) {
 			//exit(EXIT_SUCCESS);
 		}
 	}
-
-	
 void EnterPrompt() { //to add a lign before the writing of the next prompt
 	
 	int count_newPrompt=30; //number of characters in buf

@@ -5,32 +5,35 @@
 #include <sys/wait.h>
 #include <time.h>
 #define BUFSIZE 128
-char *buf;
-int count_buf, count_prompt, number_oct;
+
+int number_oct;
 char prompt[BUFSIZE];
-pid_t pid;
-pid_t pid_son;
-pid_t ret;
-int status;
-int count_time_start;
 char newPrompt[BUFSIZE];
-struct timespec res; //to read the time
-clockid_t clk_id=CLOCK_MONOTONIC;//choice of the clock
-int divis=100000;
+
 	
 void Welcome() {
+	char *buf;
+	int count_buf;
 	buf="\nBienvenue dans le Shell ENSEA.\nPour quitter, tapez 'exit'.\nenseash % ";
 	count_buf=70; //number of characters in buf
 	
 	write(STDOUT_FILENO,buf,count_buf); //to write buf
 }	
 
-void getPrompt() {		
+void getPrompt() {	
+	int count_prompt;	
 	count_prompt=BUFSIZE;
 	number_oct=read(STDOUT_FILENO,prompt,count_prompt);//reading of the prompt in "prompt"
 }
 
 void Exec(char *command) {
+	
+	clockid_t clk_id=CLOCK_MONOTONIC;//choice of the clock
+	int divis=100000;
+	int count_time_start;
+	int status;
+	pid_t ret;
+	struct timespec res; //to read the time
 	int count_time;
 	char *command_exit="exit";
 	int size_exit=4;

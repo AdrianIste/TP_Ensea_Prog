@@ -4,29 +4,33 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #define BUFSIZE 128
-char *buf;
-int count_buf, count_prompt, number_oct;
+
+int number_oct;
 char prompt[BUFSIZE];
-pid_t pid;
-pid_t pid_son;
-pid_t ret;
-int status;
+
+
 char newPrompt[BUFSIZE];
 
 	
 void Welcome() {
+	char *buf;
 	buf="\nBienvenue dans le Shell ENSEA.\nPour quitter, tapez 'exit'.\nenseash % ";
+	int count_buf;
 	count_buf=70; //number of characters in buf
 	
 	write(STDOUT_FILENO,buf,count_buf); //to write buf
 }	
 
-void getPrompt() {		
+void getPrompt() {	
+	
+	int count_prompt;	
 	count_prompt=BUFSIZE;
 	number_oct=read(STDOUT_FILENO,prompt,count_prompt);//reading of the prompt in "prompt"
 }
 
 void Exec(char *command) {
+	pid_t ret;
+	int status;
 	char *command_exit="exit";
 	int size_exit=4;
 	char *bye="Bye bye...\n";
