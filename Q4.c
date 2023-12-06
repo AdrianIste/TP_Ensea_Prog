@@ -11,6 +11,8 @@ pid_t pid;
 pid_t pid_son;
 pid_t ret;
 int status;
+char newPrompt[BUFSIZE];
+
 	
 void Welcome() {
 	buf="\nBienvenue dans le Shell ENSEA.\nPour quitter, tapez 'exit'.\nenseash % ";
@@ -27,7 +29,6 @@ void getPrompt() {
 void Exec(char *command) {
 	char *command_exit="exit";
 	int size_exit=4;
-	
 	char *bye="Bye bye...\n";
 	int count_bye=11;
 	int len_command=strnlen(command,BUFSIZE);
@@ -37,20 +38,35 @@ void Exec(char *command) {
 			write(STDOUT_FILENO,bye,count_bye);
 			exit(EXIT_SUCCESS);
 		}
+	
 	ret=fork();
 	if (ret<0) { // if there is a problem
-		exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE); 
 	}
 	if (ret==0) { //in the son process
 		execlp(command, command,NULL); //execution of the command written in the prompt
-		exit(EXIT_SUCCESS);
+		exit(EXIT_FAILURE); 
+		
+		
 	}
 	if (ret>0) { //in the father process
+		
 			wait(&status); //waiting for the son process to finish
-			
+			if (WIFEXITED(status)) {
+				sprintf(newPrompt,"enseash [exit:%d] $",WEXITSTATUS(status));
+			} else if(WIFSIGNALED(status)) {
+				sprintf(newPrompt,"enseash [sign:%d] $",WTERMSIG(status));
+			}
 			//exit(EXIT_SUCCESS);
 		}
 	}
+	
+void EnterPrompt() { //to add a lign before the writing of the next prompt
+	
+	int count_newPrompt=19; //number of characters in buf
+	
+	write(STDOUT_FILENO,newPrompt,count_newPrompt); //to write buf
+}	
 
 	
 
@@ -62,6 +78,7 @@ int main() {
 		
 		getPrompt();
 		Exec(prompt);
+		EnterPrompt();
 		
 		
 
