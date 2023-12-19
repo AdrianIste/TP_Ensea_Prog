@@ -10,7 +10,7 @@
 
 char *name;
 char *file;
-
+struct addrinfo *res;
 
 void getInfo(char *nameEntered, char *fileEntered) { //to take the names from the arguments
 	size_t lenName=strnlen(nameEntered,BUFSIZE);
@@ -20,7 +20,7 @@ void getInfo(char *nameEntered, char *fileEntered) { //to take the names from th
 	strcpy(file,fileEntered);
 	strcpy(name,nameEntered);
 }
-void getAddr(char *domain, struct addrinfo *res) { //to take the address
+void getAddr(char *domain) { //to take the address
 	struct addrinfo hints;
 	int err;
 	int size_info;
@@ -40,12 +40,11 @@ void getAddr(char *domain, struct addrinfo *res) { //to take the address
 }
 	
 int main (int argc, char *argv[]) {
-	struct addrinfo *res=malloc(sizeof(struct addrinfo));
+
 
 	getInfo(argv[1],argv[2]);
-	getAddr(name,res);
+	getAddr(name);
 	
 	free(name);
 	free(file);
-	free(res);
 }

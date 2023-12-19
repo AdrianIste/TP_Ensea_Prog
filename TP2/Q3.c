@@ -8,6 +8,7 @@
 #define BUFSIZE 128
 char *name;
 char *file;
+struct addrinfo *res;
 
 
 
@@ -18,17 +19,18 @@ void getInfo(char *nameEntered, char *fileEntered) { //to take the names from th
 	size_t lenFile=strnlen(fileEntered,BUFSIZE);
 	
 	name=malloc(lenName);
-	file=malloc(lenFile);////////////////////////
-	//fileEntered[lenFile-1]='\0';
+	file=malloc(lenFile);
 	strncpy(file,fileEntered,lenFile);
 	strncpy(name,nameEntered,lenName);
 	
 }
-void getAddr(char *domain, struct addrinfo *res) { //to take the address
+void getAddr(char *domain) { //to take the address
 	struct addrinfo hints;
 	int err;
 	int size_info;
 	const char *message_error;
+
+
 	
 	size_info=sizeof(struct addrinfo);
 	memset(&hints,0,size_info); //set all elements of struct to 0
@@ -36,17 +38,18 @@ void getAddr(char *domain, struct addrinfo *res) { //to take the address
 	err=getaddrinfo(domain,NULL,&hints,&res);//fill res with hints fields
 	message_error=gai_strerror(err);
 	
+	
 	if (err!=0) {
 		size_t LenError=strlen(message_error);
 		write(STDOUT_FILENO, message_error,LenError);
 	}
 	
+	
 }
-int getSocket(struct addrinfo *res) {
+int getSocket() { //getting the socket following the address we have in res
 	
 	char *error="error creating socket";
 	int socketPath;
-	printf("%d %d %d", res->ai_family,res->ai_socktype,res->ai_protocol);
 	socketPath=socket(res->ai_family, res->ai_socktype, res->ai_protocol); //put the socket int socketPath, return -1 if error
 	if (socketPath ==-1) {
 		write(STDOUT_FILENO,error,strlen(error));
@@ -63,10 +66,10 @@ int main (int argc, char *argv[]) {
 	struct addrinfo *res=malloc(sizeof(struct addrinfo));
 	
 	getInfo(argv[1],argv[2]);
-	getAddr(name,res);
-	printf("nom %s file %s", name, file);
+	getAddr(name);
 
-	socketPath=getSocket(res);
+	socketPath=getSocket();
+	printf("nom %s file %s socket %d \n", name, file,socketPath);
 
 	
 	
