@@ -4,18 +4,19 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define BUFSIZE 128
 
 char *name;
 char *file;
 
 
-void getInfo(char *name1, char *file1) { //to take the names from the arguments
-	size_t lenName=strlen(name1);
-	size_t lenFile=strlen(file1);
+void getInfo(char *nameEntered, char *fileEntered) { //to take the names from the arguments
+	size_t lenName=strnlen(nameEntered,BUFSIZE);
+	size_t lenFile=strnlen(fileEntered,BUFSIZE);
 	name=malloc(lenName);
-	file=malloc(lenFile-1);////////////////////////
-	strcpy(file,file1);
-	strcpy(name,name1);
+	file=malloc(lenFile);
+	strncpy(file,fileEntered,lenFile);
+	strncpy(name,nameEntered,lenName);
 }
 
 int main (int argc, char *argv[]) {
