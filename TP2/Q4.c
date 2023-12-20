@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #define BUFSIZE 516
 char *name;
 char *file;
@@ -63,11 +64,13 @@ int getSocket() { //getting the socket following the address we have in res
 }
 }
 
-void createRequest(char* fileEntered, int path) { //create the request following RFC1350
+void Request(char* fileEntered, int path) { //create the request following RFC1350
 	req=malloc(BUFSIZE);
 	char* mode;
 	int err;
 	int lenReq;
+	char* errSend="error sending \n";
+	int lenErrSend=strnlen(errSend,BUFSIZE);
 
 
 	
@@ -92,7 +95,7 @@ void createRequest(char* fileEntered, int path) { //create the request following
 				//write(STDOUT_FILENO, req,BUFSIZE);
 
 	if (err==-1) {
-		write(STDOUT_FILENO,"errorSend",9);
+		write(STDOUT_FILENO,errSend,lenErrSend);
 		exit(EXIT_FAILURE);
 	}
 
@@ -107,6 +110,8 @@ void createRequest(char* fileEntered, int path) { //create the request following
 void sendACK(char data1, char data2, int path) { //to send the acknowledgment
 	char *ackReq;
 	int err;
+	char* errACK="erreur ACK \n";
+	int lenErrACK=strnlen(errACK,BUFSIZE);
 	ackReq=malloc(BUFSIZE);
 	ackReq[0]=0;
 	ackReq[1]=4;
@@ -117,7 +122,7 @@ void sendACK(char data1, char data2, int path) { //to send the acknowledgment
 
 	err=sendto(path, ackReq,lenackReq,0,res->ai_addr,res->ai_addrlen);
 	if (err==-1) {
-		write(STDOUT_FILENO,"erreurack",9);
+		write(STDOUT_FILENO,errACK,lenErrACK);
 		exit(EXIT_FAILURE);
 	}
 	free(ackReq);
@@ -126,22 +131,32 @@ void sendACK(char data1, char data2, int path) { //to send the acknowledgment
 void receiveData(int path) { //to stock the data received
 	char data[BUFSIZE];
 	int lenData=BUFSIZE;
+	char* errRCP="error reception \n";
+	int lenErrRCP=strnlen(errRCP,BUFSIZE);
+	char* errCREAT="error creating file \n";
+	int lenErrCREAT=strnlen(errCREAT,BUFSIZE);
+	
+	int fileDescriptor=open(file, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR); //creating the file
+	if (fileDescriptor==-1) {
+		write(STDOUT_FILENO,errCREAT,lenErrCREAT);
+		exit(EXIT_FAILURE);
+	}
 
 	while(1) {
 		lenData=recvfrom(path,data,BUFSIZE,0,res->ai_addr,&(res->ai_addrlen));
+		
 
-
-		printf("%d \n",lenData);
 			if (lenData==-1) {
-				write(STDOUT_FILENO,"errorReceive",12);
+				write(STDOUT_FILENO,errRCP,lenErrRCP);
 				exit(EXIT_FAILURE);
 			}
 			else if (lenData==0){
-						printf("%d",lenData);
+				break;
 
 
 			}
 			else {
+				write(fileDescriptor,data+4,lenData-4); //writing the file received in the new file, +4 is to avoid the header tctp
 
 				sendACK(data[2],data[3], path);
 			if (lenData<BUFSIZE) {
@@ -159,18 +174,17 @@ void receiveData(int path) { //to stock the data received
 int main (int argc, char *argv[]) {
 	
 	int socketPath;
-	
 	getInfo(argv[1],argv[2]);
 	getAddr(name,file);
 
+
 	socketPath=getSocket();
-	//printf("nom %s file %s socket %d \n", name, file,socketPath);
 	
-	createRequest(file,socketPath);
+	Request(file,socketPath);
 		
 
 	receiveData(socketPath);
-
+	
 
 	
 	
