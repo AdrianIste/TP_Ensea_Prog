@@ -83,6 +83,7 @@ void receiveACK(int path) { //getting the ACK
 			}
 			ACK1=ACK[2];
 			ACK2=ACK[3];
+			printf("ACK1 %d ACK2 %d \n",ACK1, ACK2);
 			
 				
 					
@@ -148,7 +149,7 @@ void sendWRQ(char ack1, char ack2, int path) { //to send the data
 	data[0]=0;
 	data[1]=3;
 	data[2]=ack1;
-	data[3]=ack2;
+	data[3]=ack2+1;
 	
 	
 	while(1) {
